@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Route Optimizer - Pakistan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #22d3ee;
+            --background: #0f0f23;
+            --surface: #1a1a2e;
+            --surface-light: #252542;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            font-size: 1.5rem;
+        }
+
+        /* Grid Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Results Section */
+        .route-result {
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: var(--glass);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* Route Path */
+        .route-path {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--surface-light);
+            border-radius: 8px;
+        }
+
+        .path-junction {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .path-arrow {
+            color: var(--secondary);
+            font-size: 1.25rem;
+        }
+
+        /* Junction List */
+        .junction-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .junction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: var(--surface);
+            transition: background 0.3s;
+        }
+
+        .junction-item:hover {
+            background: var(--surface-light);
+        }
+
+        .junction-name {
+            font-weight: 500;
+        }
+
+        .junction-area {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .junction-id {
+            background: var(--glass);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        /* Traffic Status */
+        .traffic-level {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .traffic-low { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .traffic-normal { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .traffic-heavy { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+        .traffic-severe { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .traffic-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .traffic-low .traffic-dot { background: #10b981; }
+        .traffic-normal .traffic-dot { background: #f59e0b; }
+        .traffic-heavy .traffic-dot { background: #f97316; }
+        .traffic-severe .traffic-dot { background: #ef4444; }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--glass-border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Error */
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        /* Map placeholder */
+        .map-placeholder {
+            height: 400px;
+            background: var(--surface);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            border: 2px dashed var(--glass-border);
+        }
+
+        .map-placeholder .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Smart Traffic Route Optimizer</h1>
+            <p>Find the fastest routes across Pakistan cities with real-time traffic data</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Panel - Controls -->
+            <div class="left-panel">
+                <!-- Route Finder -->
+                <div class="glass-card">
+                    <h2 class="card-title">
+                        <span class="icon">🗺️</span>
+                        Find Route
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label for="fromJunction">From</label>
+                        <select id="fromJunction">
+                            <option value="">Select starting point...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="toJunction">To</label>
+                        <select id="toJunction">
+                            <option value="">Select destination...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="optimizeBy">Optimize For</label>
+                        <select id="optimizeBy">
+                            <option value="time">🕐 Fastest Route (Time)</option>
+                            <option value="distance">📏 Shortest Route (Distance)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="findRoute()">
+                        🔍 Find Best Route
+                    </button>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Calculating optimal route...</p>
+                    </div>
+
+                    <div id="routeResult" class="hidden">
+                        <!-- Results will be inserted here -->
+                    </div>
+
+                    <div id="errorMessage" class="error-message hidden">
+                        <!-- Error message will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="glass-card">
+                    <h2 class="card-title">
+                        <span class="icon">📊</span>
+                        System Status
+                    </h2>
+                    <div id="systemStatus">
+                        <p style="color: var(--text-muted);">Connecting to server...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Map & Junctions -->
+            <div class="right-panel">
+                <!-- Map -->
+                <div class="glass-card">
+                    <h2 class="card-title">
+                        <span class="icon">🗺️</span>
+                        Route Map
+                    </h2>
+                    <div class="map-placeholder" id="mapContainer">
+                        <span class="icon">📍</span>
+                        <p>Select a route to view on map</p>
+                        <small>Map visualization will appear here</small>
+                    </div>
+                </div>
+
+                <!-- Junctions -->
+                <div class="glass-card">
+                    <h2 class="card-title">
+                        <span class="icon">🚦</span>
+                        Available Junctions
+                    </h2>
+                    <div class="junction-list" id="junctionList">
+                        <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+                            Loading junctions...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Smart Traffic Route Optimizer | DSA Project</p>
+            <p>Built with C++ • B-Tree • Dijkstra's Algorithm • Hash Tables</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:8080/api';
+
+        // State
+        let junctions = [];
+        let roads = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkHealth();
+            loadJunctions();
+            loadRoads();
+        });
+
+        // API Functions
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                document.getElementById('systemStatus').innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <span class="status-badge">
+                            <span class="status-dot"></span>
+                            ${data.status}
+                        </span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="stat-item">
+                            <div class="stat-value">${data.junctions}</div>
+                            <div class="stat-label">Junctions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${data.roads}</div>
+                            <div class="stat-label">Roads</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('systemStatus').innerHTML = `
+                    <div class="error-message">
+                        <strong>⚠️ Server Offline</strong>
+                        <p>Cannot connect to the API server. Make sure the C++ server is running.</p>
+                        <small>Expected at: ${API_BASE}</small>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadJunctions() {
+            try {
+                const response = await fetch(`${API_BASE}/junctions`);
+                const data = await response.json();
+                junctions = data.junctions;
+                
+                populateDropdowns();
+                displayJunctions();
+            } catch (error) {
+                console.error('Error loading junctions:', error);
+            }
+        }
+
+        async function loadRoads() {
+            try {
+                const response = await fetch(`${API_BASE}/roads`);
+                const data = await response.json();
+                roads = data.roads;
+            } catch (error) {
+                console.error('Error loading roads:', error);
+            }
+        }
+
+        function populateDropdowns() {
+            const fromSelect = document.getElementById('fromJunction');
+            const toSelect = document.getElementById('toJunction');
+            
+            const options = junctions.map(j => 
+                `<option value="${j.id}">${j.name} (${j.area})</option>`
+            ).join('');
+            
+            fromSelect.innerHTML = '<option value="">Select starting point...</option>' + options;
+            toSelect.innerHTML = '<option value="">Select destination...</option>' + options;
+        }
+
+        function displayJunctions() {
+            const list = document.getElementById('junctionList');
+            
+            list.innerHTML = junctions.map(j => `
+                <div class="junction-item">
+                    <div>
+                        <div class="junction-name">${j.name}</div>
+                        <div class="junction-area">${j.area}, ${j.city}</div>
+                    </div>
+                    <span class="junction-id">ID: ${j.id}</span>
+                </div>
+            `).join('');
+        }
+
+        async function findRoute() {
+            const from = document.getElementById('fromJunction').value;
+            const to = document.getElementById('toJunction').value;
+            const optimize = document.getElementById('optimizeBy').value;
+            
+            if (!from || !to) {
+                showError('Please select both starting point and destination.');
+                return;
+            }
+            
+            if (from === to) {
+                showError('Starting point and destination cannot be the same.');
+                return;
+            }
+
+            hideError();
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/route?from=${from}&to=${to}&optimize=${optimize}`);
+                const data = await response.json();
+                
+                showLoading(false);
+                
+                if (data.found) {
+                    displayRoute(data);
+                } else {
+                    showError('No route found between the selected junctions.');
+                }
+            } catch (error) {
+                showLoading(false);
+                showError('Error connecting to server. Make sure the API is running.');
+            }
+        }
+
+        function displayRoute(result) {
+            const container = document.getElementById('routeResult');
+            
+            // Format time
+            const hours = Math.floor(result.totalTime / 60);
+            const minutes = Math.round(result.totalTime % 60);
+            const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes} min`;
+            
+            container.innerHTML = `
+                <div class="route-result">
+                    <h3 style="margin-bottom: 16px; color: var(--secondary);">✅ Route Found!</h3>
+                    
+                    <div class="route-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${result.totalDistance.toFixed(1)}</div>
+                            <div class="stat-label">Kilometers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${timeStr}</div>
+                            <div class="stat-label">Est. Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${result.junctions.length}</div>
+                            <div class="stat-label">Junctions</div>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-bottom: 12px; color: var(--text-muted);">Route Path:</h4>
+                    <div class="route-path">
+                        ${result.junctions.map((j, i) => `
+                            <span class="path-junction">${j.name}</span>
+                            ${i < result.junctions.length - 1 ? '<span class="path-arrow">→</span>' : ''}
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            container.classList.remove('hidden');
+            
+            // Update map placeholder
+            updateMapDisplay(result);
+        }
+
+        function updateMapDisplay(result) {
+            const mapContainer = document.getElementById('mapContainer');
+            
+            mapContainer.innerHTML = `
+                <div style="padding: 20px; width: 100%;">
+                    <h4 style="color: var(--secondary); margin-bottom: 16px; text-align: center;">
+                        📍 Route: ${result.junctions[0].name} → ${result.junctions[result.junctions.length - 1].name}
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${result.junctions.map((j, i) => `
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface); border-radius: 8px;">
+                                <div style="width: 30px; height: 30px; background: ${i === 0 ? 'var(--success)' : i === result.junctions.length - 1 ? 'var(--danger)' : 'var(--primary)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
+                                    ${i + 1}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">${j.name}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted);">${j.area}, ${j.city}</div>
+                                </div>
+                                <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+                                    ${j.latitude.toFixed(4)}, ${j.longitude.toFixed(4)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+            document.getElementById('routeResult').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = '⚠️ ' + message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        // Auto-refresh status every 30 seconds
+        setInterval(checkHealth, 30000);
+    </script>
+</body>
+</html>
