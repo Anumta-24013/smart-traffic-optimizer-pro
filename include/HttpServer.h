@@ -1,9 +1,8 @@
 /**
  * Smart Traffic Route Optimizer
- * HTTP Server Implementation
+ * HTTP Server Implementation - WITH AUTHENTICATION
  * 
- * Simple REST API server for traffic management
- * Endpoints: /api/health, /api/junctions, /api/route, /api/traffic
+ * NEW ENDPOINTS: /api/register, /api/login
  */
 
 #ifndef HTTPSERVER_H
@@ -16,6 +15,8 @@
 #include <functional>
 #include <map>
 #include <regex>
+#include <random>
+#include <ctime>
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -43,7 +44,6 @@ private:
     TrafficManager& trafficManager;
     std::map<std::string, std::function<std::string(const std::string&, const std::string&)>> routes;
 
-    // Parse HTTP request
     struct HttpRequest {
         std::string method;
         std::string path;
@@ -52,6 +52,62 @@ private:
         std::map<std::string, std::string> headers;
         std::map<std::string, std::string> params;
     };
+
+    // ============ NEW: Helper Functions for Authentication ============
+    
+    // Extract field from JSON body
+    std::string extractFromBody(const std::string& body, const std::string& field) {
+        size_t pos = body.find("\"" + field + "\"");
+        if (pos == std::string::npos) return "";
+        
+        pos = body.find(":", pos);
+        if (pos == std::string::npos) return "";
+        pos++;
+        
+        // Skip whitespace
+        while (pos < body.length() && (body[pos] == ' ' || body[pos] == '\t')) pos++;
+        
+        if (pos >= body.length()) return "";
+        
+        if (body[pos] == '"') {
+            // String value
+            size_t start = pos + 1;
+            size_t end = body.find("\"", start);
+            if (end == std::string::npos) return "";
+            return body.substr(start, end - start);
+        } else {
+            // Number or boolean
+            size_t start = pos;
+            size_t end = body.find_first_of(",}", start);
+            if (end == std::string::npos) return "";
+            return body.substr(start, end - start);
+        }
+    }
+    
+    // Generate random token
+    std::string generateToken() {
+        static const char alphanum[] =
+            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        std::string token;
+        
+        // Use better random generator
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, sizeof(alphanum) - 2);
+        
+        for (int i = 0; i < 32; ++i) {
+            token += alphanum[dis(gen)];
+        }
+        return token;
+    }
+    
+    // Simple hash function (in production, use bcrypt or SHA-256)
+    std::string hashPassword(const std::string& password) {
+        std::hash<std::string> hasher;
+        return std::to_string(hasher(password + "SALT_KEY_12345"));
+    }
+
+    // ============ END NEW Helper Functions ============
 
     HttpRequest parseRequest(const std::string& raw) {
         HttpRequest req;
@@ -104,7 +160,6 @@ private:
         return req;
     }
 
-    // Create HTTP response
     std::string createResponse(int statusCode, const std::string& body, 
                                const std::string& contentType = "application/json") {
         std::string statusText;
@@ -112,6 +167,7 @@ private:
             case 200: statusText = "OK"; break;
             case 201: statusText = "Created"; break;
             case 400: statusText = "Bad Request"; break;
+            case 401: statusText = "Unauthorized"; break;
             case 404: statusText = "Not Found"; break;
             case 500: statusText = "Internal Server Error"; break;
             default: statusText = "Unknown";
@@ -131,7 +187,6 @@ private:
         return response.str();
     }
 
-    // Handle client connection
     void handleClient(SOCKET clientSocket) {
         char buffer[8192];
         int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
@@ -151,7 +206,14 @@ private:
         if (req.method == "OPTIONS") {
             response = createResponse(200, "");
         }
-        // Route requests
+        // ============ NEW: Authentication Routes ============
+        else if (req.path == "/api/register") {
+            response = handleRegister(req);
+        }
+        else if (req.path == "/api/login") {
+            response = handleLogin(req);
+        }
+        // ============ END NEW Routes ============
         else if (req.path == "/api/health") {
             response = handleHealth(req);
         }
@@ -184,7 +246,96 @@ private:
         closesocket(clientSocket);
     }
 
-    // API Handlers
+    // ============ NEW: Authentication Handlers ============
+    
+    std::string handleRegister(const HttpRequest& req) {
+        std::cout << "📝 Registration request received\n";
+        
+        // Extract data from JSON body
+        std::string username = extractFromBody(req.body, "username");
+        std::string email = extractFromBody(req.body, "email");
+        std::string password = extractFromBody(req.body, "password");
+        
+        std::cout << "   Username: " << username << "\n";
+        std::cout << "   Email: " << email << "\n";
+        
+        // Validation
+        if (username.empty() || password.empty() || email.empty()) {
+            std::cout << "   ❌ Missing fields\n";
+            return createResponse(400, "{\"error\": \"Missing required fields\"}");
+        }
+        
+        if (username.length() < 3) {
+            return createResponse(400, "{\"error\": \"Username must be at least 3 characters\"}");
+        }
+        
+        if (password.length() < 6) {
+            return createResponse(400, "{\"error\": \"Password must be at least 6 characters\"}");
+        }
+        
+        // Hash password
+        std::string passwordHash = hashPassword(password);
+        
+        // Register user
+        if (trafficManager.registerUser(username, email, passwordHash)) {
+            std::cout << "   ✅ User registered successfully\n";
+            std::string json = "{";
+            json += "\"success\": true,";
+            json += "\"message\": \"User registered successfully\",";
+            json += "\"username\": \"" + username + "\"";
+            json += "}";
+            return createResponse(201, json);
+        } else {
+            std::cout << "   ❌ Username already exists\n";
+            return createResponse(400, "{\"error\": \"Username already exists\"}");
+        }
+    }
+    
+    std::string handleLogin(const HttpRequest& req) {
+        std::cout << "🔐 Login request received\n";
+        
+        // Extract credentials
+        std::string username = extractFromBody(req.body, "username");
+        std::string password = extractFromBody(req.body, "password");
+        
+        std::cout << "   Username: " << username << "\n";
+        
+        if (username.empty() || password.empty()) {
+            std::cout << "   ❌ Missing credentials\n";
+            return createResponse(400, "{\"error\": \"Missing username or password\"}");
+        }
+        
+        // Hash password
+        std::string passwordHash = hashPassword(password);
+        
+        // Authenticate
+        User user;
+        if (trafficManager.authenticateUser(username, passwordHash, &user)) {
+            std::cout << "   ✅ Login successful\n";
+            
+            // Generate token
+            std::string token = generateToken();
+            
+            std::string json = "{";
+            json += "\"success\": true,";
+            json += "\"token\": \"" + token + "\",";
+            json += "\"user\": {";
+            json += "\"id\": " + std::to_string(user.id) + ",";
+            json += "\"username\": \"" + user.username + "\",";
+            json += "\"email\": \"" + user.email + "\"";
+            json += "}";
+            json += "}";
+            
+            return createResponse(200, json);
+        } else {
+            std::cout << "   ❌ Invalid credentials\n";
+            return createResponse(401, "{\"error\": \"Invalid username or password\"}");
+        }
+    }
+    
+    // ============ END NEW Handlers ============
+
+    // Original handlers (unchanged)
     std::string handleHealth(const HttpRequest& req) {
         std::string json = "{";
         json += "\"status\": \"healthy\",";
@@ -210,7 +361,6 @@ private:
     }
 
     std::string handleJunction(const HttpRequest& req) {
-        // Get junction by ID
         if (req.params.find("id") != req.params.end()) {
             int id = std::stoi(req.params.at("id"));
             Junction j;
@@ -220,7 +370,6 @@ private:
             return createResponse(404, "{\"error\": \"Junction not found\"}");
         }
         
-        // Get junction by name
         if (req.params.find("name") != req.params.end()) {
             Junction j;
             if (trafficManager.getJunctionByName(req.params.at("name"), &j)) {
@@ -265,7 +414,6 @@ private:
 
     std::string handleTraffic(const HttpRequest& req) {
         if (req.method == "POST" || req.method == "PUT") {
-            // Update traffic level
             if (req.params.find("road") == req.params.end() || 
                 req.params.find("level") == req.params.end()) {
                 return createResponse(400, "{\"error\": \"Missing road or level parameter\"}");
@@ -289,7 +437,6 @@ private:
             return createResponse(404, "{\"error\": \"Road not found\"}");
         }
 
-        // GET - return all traffic levels
         auto roads = trafficManager.getAllRoads();
         std::string json = "{\"traffic\": [";
         for (size_t i = 0; i < roads.size(); ++i) {
@@ -353,7 +500,6 @@ public:
             return false;
         }
 
-        // Allow socket reuse
         int opt = 1;
         setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&opt, sizeof(opt));
 
@@ -380,15 +526,17 @@ public:
         std::cout << " Server running on http://localhost:" << port << "\n";
         std::cout << "========================================\n";
         std::cout << "\nEndpoints:\n";
-        std::cout << "  GET  /api/health     - Health check\n";
-        std::cout << "  GET  /api/junctions  - Get all junctions\n";
-        std::cout << "  GET  /api/junction   - Get junction by id or name\n";
-        std::cout << "  GET  /api/roads      - Get all roads\n";
-        std::cout << "  GET  /api/route      - Find route (from, to, optimize)\n";
-        std::cout << "  GET  /api/traffic    - Get traffic levels\n";
-        std::cout << "  POST /api/traffic    - Update traffic level\n";
-        std::cout << "  GET  /api/search     - Search junctions\n";
-        std::cout << "  GET  /api/stats      - System statistics\n";
+        std::cout << "  GET  /api/health      - Health check\n";
+        std::cout << "  POST /api/register    - Register new user ✨ NEW\n";
+        std::cout << "  POST /api/login       - User login ✨ NEW\n";
+        std::cout << "  GET  /api/junctions   - Get all junctions\n";
+        std::cout << "  GET  /api/junction    - Get junction by id or name\n";
+        std::cout << "  GET  /api/roads       - Get all roads\n";
+        std::cout << "  GET  /api/route       - Find route (from, to, optimize)\n";
+        std::cout << "  GET  /api/traffic     - Get traffic levels\n";
+        std::cout << "  POST /api/traffic     - Update traffic level\n";
+        std::cout << "  GET  /api/search      - Search junctions\n";
+        std::cout << "  GET  /api/stats       - System statistics\n";
         std::cout << "\nPress Ctrl+C to stop the server.\n\n";
 
         return true;
@@ -407,7 +555,6 @@ public:
                 continue;
             }
 
-            // Handle client in a new thread
             std::thread([this, clientSocket]() {
                 handleClient(clientSocket);
             }).detach();
