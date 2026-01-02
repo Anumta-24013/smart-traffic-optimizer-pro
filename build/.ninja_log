@@ -1,0 +1,5 @@
+# ninja log v7
+86	108	7887790760654303	clean	7b037816d5af7aea
+27	18411	7887790761388184	CMakeFiles/traffic_optimizer.dir/main.cpp.obj	1db18eff8b7cee25
+518	52353	7890354060479174	CMakeFiles/traffic_optimizer.dir/main.cpp.obj	1db18eff8b7cee25
+52362	52764	7890354578946430	traffic_optimizer.exe	5018725d53654eda

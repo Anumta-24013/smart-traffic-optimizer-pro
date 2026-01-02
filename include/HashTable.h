@@ -85,6 +85,57 @@ public:
         buckets.resize(numBuckets);
     }
 
+    // Add these methods to HashTable class (public section):
+
+    struct HashTableMetrics {
+        size_t elementCount;
+        size_t bucketCount;
+        float loadFactor;
+        size_t longestChain;
+        double avgChainLength;
+        size_t collisions;
+        size_t rehashes;
+        size_t memoryUsageBytes;
+        size_t searchOps;
+    };
+
+    HashTableMetrics getMetrics() const {
+        HashTableMetrics m;
+        m.elementCount = numElements;
+        m.bucketCount = numBuckets;
+        m.loadFactor = static_cast<float>(numElements) / numBuckets;
+        
+        // Calculate chain statistics
+        m.longestChain = 0;
+        size_t totalChainLength = 0;
+        m.collisions = 0;
+        
+        for (const auto& bucket : buckets) {
+            size_t chainLen = bucket.size();
+            if (chainLen > 1) {
+                m.collisions += (chainLen - 1);
+            }
+            if (chainLen > m.longestChain) {
+                m.longestChain = chainLen;
+            }
+            totalChainLength += chainLen;
+        }
+        
+        m.avgChainLength = numElements > 0 ? 
+                        static_cast<double>(totalChainLength) / numBuckets : 0.0;
+        
+        m.rehashes = 0; // Track this if you add rehash counter
+        m.memoryUsageBytes = numBuckets * sizeof(std::list<HashNode>) + 
+                            numElements * (sizeof(K) + sizeof(V) + 32);
+        m.searchOps = 0;
+        
+        return m;
+    }
+
+    float getLoadFactor() const {
+        return static_cast<float>(numElements) / numBuckets;
+    }
+
     // Insert or update a key-value pair - O(1) average
     void insert(const K& key, const V& value) {
         // Check load factor and rehash if needed

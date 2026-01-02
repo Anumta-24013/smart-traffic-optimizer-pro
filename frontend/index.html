@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Traffic Route Optimizer - Pakistan</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
         * {
             margin: 0;
@@ -38,157 +42,43 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* Header */
         header {
-            text-align: center;
-            padding: 40px 20px;
-            margin-bottom: 30px;
+            padding: 30px 20px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        /* header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        } */
 
         .header-left h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .header-left p {
             color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .user-info {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-        }
-
-        .user-info.active {
-            display: flex;
-        }
-
-
-        /* Glass Card */
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-title .icon {
-            font-size: 1.5rem;
-        }
-
-        /* Grid Layout */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-        }
-
-        /* @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        } */
-
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-            header {
-                flex-direction: column;
-                gap: 20px;
-            }
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        select, input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            background: var(--surface);
-            color: var(--text);
             font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
-
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -199,187 +89,333 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
         }
 
-        .btn-secondary {
-            background: var(--surface-light);
-            color: var(--text);
-            border: 1px solid var(--glass-border);
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .btn-secondary:hover {
-            background: var(--surface);
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.85rem;
         }
 
         .btn-full {
             width: 100%;
         }
 
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.9rem;
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
-        /* Results Section */
-        .route-result {
-            padding: 20px;
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .left-panel {
+            overflow-y: auto;
+            max-height: 100%;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 40px;
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .clear-btn.visible {
+            display: block;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            margin-top: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .suggestions.visible {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .suggestion-item:hover {
+            background: var(--surface-light);
+        }
+
+        .selected-junction {
+            display: none;
+            padding: 10px 14px;
+            background: var(--primary);
+            border-radius: 8px;
+            margin-top: 8px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .selected-junction.visible {
+            display: flex;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .routes-container {
+            margin-top: 20px;
+        }
+
+        .route-card {
             background: var(--surface);
             border-radius: 12px;
-            margin-top: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .route-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .route-card.active {
+            border-color: var(--secondary);
+            background: var(--surface-light);
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .route-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-fastest {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-shortest {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge-optimal {
+            background: var(--secondary);
+            color: white;
         }
 
         .route-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-top: 12px;
         }
 
         .stat-item {
             text-align: center;
-            padding: 16px;
+            padding: 10px;
             background: var(--glass);
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
+            border-radius: 8px;
         }
 
         .stat-value {
-            font-size: 1.75rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--secondary);
         }
 
         .stat-label {
             color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-top: 4px;
+            font-size: 0.75rem;
+            margin-top: 2px;
         }
 
-        /* Route Path */
         .route-path {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--glass);
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .path-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .route-step {
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
-            padding: 16px;
-            background: var(--surface-light);
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: var(--glass);
             border-radius: 8px;
         }
 
-        .path-junction {
-            padding: 8px 16px;
+        .step-number {
+            min-width: 24px;
+            height: 24px;
             background: var(--primary);
             color: white;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .path-arrow {
-            color: var(--secondary);
-            font-size: 1.25rem;
-        }
-
-        /* Junction List */
-        .junction-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .junction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background: var(--surface);
-            transition: background 0.3s;
-        }
-
-        .junction-item:hover {
-            background: var(--surface-light);
-        }
-
-        .junction-name {
-            font-weight: 500;
-        }
-
-        .junction-area {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .junction-id {
-            background: var(--glass);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            color: var(--secondary);
-        }
-
-
-
-        /* Traffic Status */
-        .traffic-level {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .traffic-low { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .traffic-normal { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .traffic-heavy { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-        .traffic-severe { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-        .traffic-dot {
-            width: 8px;
-            height: 8px;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
-        .traffic-low .traffic-dot { background: #10b981; }
-        .traffic-normal .traffic-dot { background: #f59e0b; }
-        .traffic-heavy .traffic-dot { background: #f97316; }
-        .traffic-severe .traffic-dot { background: #ef4444; }
+        .step-info {
+            flex: 1;
+        }
 
-        /* Status Badge */
-        .status-badge {
+        .step-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .step-location {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .step-distance {
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        .traffic-indicator {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 16px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .traffic-low {
             background: rgba(16, 185, 129, 0.2);
             color: var(--success);
-            border-radius: 20px;
-            font-size: 0.9rem;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        .traffic-normal {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .traffic-heavy {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
         }
 
-        /* Loading */
         .loading {
             display: none;
             text-align: center;
-            padding: 40px;
+            padding: 30px;
         }
 
         .loading.active {
@@ -387,111 +423,96 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border: 3px solid var(--glass-border);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
+            margin: 0 auto 12px;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--surface);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--surface-light);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-
-        /* Hidden */
         .hidden {
             display: none !important;
         }
 
-        /* Error */
-        .error-message {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-        }
-
-        .success-message {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #6ee7b7;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-        }
-
-        /* Map placeholder */
-        .map-placeholder {
-            height: 400px;
+        .traffic-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
             background: var(--surface);
+            border: 1px solid var(--glass-border);
             border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            border: 2px dashed var(--glass-border);
+            padding: 14px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .map-placeholder .icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background: var(--surface);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 10px;
             font-size: 0.9rem;
         }
 
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .road-path {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
+        }
+
+        .road-path:hover {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        .color-green { background: #10b981; }
+        .color-yellow { background: #f59e0b; }
+        .color-orange { background: #fb923c; }
+        .color-red { background: #ef4444; }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface-light);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .left-panel {
+                max-height: none;
+            }
+            
+            #map {
+                height: 500px;
+            }
         }
     </style>
 </head>
@@ -500,534 +521,894 @@
         <header>
             <div class="header-left">
                 <h1>🚗 Smart Traffic Route Optimizer</h1>
-                <p>Find the fastest routes across Pakistan cities with real-time traffic data</p>
+                <p>Real-time routing across Pakistan • 19,584 locations</p>
             </div>
-            <div class="header-right">
-                <div class="user-info" id="userInfo">
-                    <span>👤 <span id="currentUsername">Guest</span></span>
-                    <button class="btn btn-secondary btn-small" onclick="logout()">Logout</button>
-                </div>
-                <button class="btn btn-primary btn-small" id="showAuthBtn" onclick="toggleAuth()">
-                    🔐 Login / Register
-                </button>
-            </div>
+            <!-- ✅ ADD THIS -->
+            <a href="dashboard.html" style="padding: 12px 24px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                📊 View Data Structures
+            </a>
         </header>
 
-        <!-- Auth Section (Hidden by default) -->
-        <div class="glass-card hidden" id="authCard">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('login')">Login</div>
-                <div class="tab" onclick="switchTab('register')">Register</div>
-            </div>
-
-            <!-- Login Form -->
-            <div id="loginForm" class="auth-section">
-                <h2 class="card-title">
-                    <span class="icon">🔐</span>
-                    User Login
-                </h2>
-                
-                <div class="form-group">
-                    <label for="loginUsername">Username</label>
-                    <input type="text" id="loginUsername" placeholder="Enter username">
-                </div>
-                
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter password">
-                </div>
-                
-                <button class="btn btn-primary btn-full" onclick="login()">
-                    🔓 Login
-                </button>
-
-                <div id="loginMessage" class="hidden"></div>
-            </div>
-
-            <!-- Register Form -->
-            <div id="registerForm" class="auth-section hidden">
-                <h2 class="card-title">
-                    <span class="icon">📝</span>
-                    Create Account
-                </h2>
-                
-                <div class="form-group">
-                    <label for="regUsername">Username</label>
-                    <input type="text" id="regUsername" placeholder="Choose a username (min 3 chars)">
-                </div>
-                
-                <div class="form-group">
-                    <label for="regEmail">Email</label>
-                    <input type="email" id="regEmail" placeholder="your.email@example.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="regPassword">Password</label>
-                    <input type="password" id="regPassword" placeholder="Choose a strong password (min 6 chars)">
-                </div>
-                
-                <button class="btn btn-primary btn-full" onclick="register()">
-                    ✅ Create Account
-                </button>
-
-                <div id="registerMessage" class="hidden"></div>
-            </div>
-        </div>
-        
         <div class="main-grid">
-            <!-- Left Panel - Controls -->
             <div class="left-panel">
-                <!-- Route Finder -->
                 <div class="glass-card">
                     <h2 class="card-title">
-                        <span class="icon">🗺️</span>
+                        <span>🗺️</span>
                         Find Route
                     </h2>
                     
                     <div class="form-group">
-                        <label for="fromJunction">From</label>
-                        <select id="fromJunction">
-                            <option value="">Select starting point...</option>
-                        </select>
+                        <label>📍 From</label>
+                        <div class="search-container">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                class="search-input" 
+                                id="fromSearch"
+                                placeholder="Search location..."
+                                autocomplete="off"
+                            />
+                            <button class="clear-btn" id="clearFrom">✕</button>
+                            <div class="suggestions" id="fromSuggestions"></div>
+                        </div>
+                        <div class="selected-junction" id="fromSelected">
+                            <div>
+                                <div id="fromSelectedName" style="font-weight: 600; color: white;"></div>
+                                <div id="fromSelectedMeta" style="font-size: 0.8rem; color: rgba(255,255,255,0.8); margin-top: 2px;"></div>
+                            </div>
+                            <button class="btn btn-primary btn-small" onclick="clearSelection('from')">Remove</button>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="toJunction">To</label>
-                        <select id="toJunction">
-                            <option value="">Select destination...</option>
-                        </select>
+                        <label>📍 To</label>
+                        <div class="search-container">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                class="search-input" 
+                                id="toSearch"
+                                placeholder="Search location..."
+                                autocomplete="off"
+                            />
+                            <button class="clear-btn" id="clearTo">✕</button>
+                            <div class="suggestions" id="toSuggestions"></div>
+                        </div>
+                        <div class="selected-junction" id="toSelected">
+                            <div>
+                                <div id="toSelectedName" style="font-weight: 600; color: white;"></div>
+                                <div id="toSelectedMeta" style="font-size: 0.8rem; color: rgba(255,255,255,0.8); margin-top: 2px;"></div>
+                            </div>
+                            <button class="btn btn-primary btn-small" onclick="clearSelection('to')">Remove</button>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="optimizeBy">Optimize For</label>
-                        <select id="optimizeBy">
-                            <option value="time">🕐 Fastest Route (Time)</option>
-                            <option value="distance">📏 Shortest Route (Distance)</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary btn-full" onclick="findRoute()">
-                        🔍 Find Best Route
+                    <button class="btn btn-primary btn-full" id="findRouteBtn" onclick="findRoutes()" disabled>
+                        🔍 Find Best Routes
                     </button>
 
                     <div class="loading" id="loading">
                         <div class="spinner"></div>
-                        <p>Calculating optimal route...</p>
-                    </div>
-
-                    <div id="routeResult" class="hidden">
-                        <!-- Results will be inserted here -->
-                    </div>
-
-                    <div id="errorMessage" class="error-message hidden">
-                        <!-- Error message will be inserted here -->
+                        <p>Calculating optimal routes...</p>
                     </div>
                 </div>
 
-                <!-- System Status -->
-                <div class="glass-card">
-                    <h2 class="card-title">
-                        <span class="icon">📊</span>
-                        System Status
-                    </h2>
-                    <div id="systemStatus">
-                        <p style="color: var(--text-muted);">Connecting to server...</p>
-                    </div>
-                </div>
+                <div id="routesContainer" class="routes-container hidden"></div>
             </div>
 
-            <!-- Right Panel - Map & Junctions -->
             <div class="right-panel">
-                <!-- Map -->
-                <div class="glass-card">
-                    <h2 class="card-title">
-                        <span class="icon">🗺️</span>
-                        Route Map
-                    </h2>
-                    <div class="map-placeholder" id="mapContainer">
-                        <span class="icon">📍</span>
-                        <p>Select a route to view on map</p>
-                        <small>Map visualization will appear here</small>
+                <div id="map"></div>
+                
+                <div class="traffic-legend">
+                    <div class="legend-title">🚦 Traffic Levels</div>
+                    <div class="legend-item">
+                        <div class="legend-color color-green"></div>
+                        <span>Low (Fast)</span>
                     </div>
-                </div>
-
-                <!-- Junctions -->
-                <div class="glass-card">
-                    <h2 class="card-title">
-                        <span class="icon">🚦</span>
-                        Available Junctions
-                    </h2>
-                    <div class="junction-list" id="junctionList">
-                        <p style="color: var(--text-muted); text-align: center; padding: 20px;">
-                            Loading junctions...
-                        </p>
+                    <div class="legend-item">
+                        <div class="legend-color color-yellow"></div>
+                        <span>Normal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-orange"></div>
+                        <span>Heavy</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-red"></div>
+                        <span>Severe</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <footer>
-            <p>Smart Traffic Route Optimizer | DSA Project</p>
-            <p>Built with C++ • B-Tree • Dijkstra's Algorithm • Hash Tables</p>
-        </footer>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <script>
-        // Configuration
-
-        // https://ssl-photos-audio-attacks.trycloudflare.com
-//        const API_BASE = 'https://ssl-photos-audio-attacks.trycloudflare.com/api';
         const API_BASE = 'http://localhost:8080/api';
-
-        // State
+        
+        let map;
         let junctions = [];
-        let roads = [];
-        let currentUser = null;
+        let selectedFrom = null;
+        let selectedTo = null;
+        let currentRoutes = [];
+        let allRouteLayers = {}; // ✅ Store layers per route: {0: {polylines: [], markers: [], labels: [], arrows: []}, 1: {...}}
+        let markerFrom, markerTo;
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            checkHealth();
+            initMap();
             loadJunctions();
-            loadRoads();
-            checkAuthStatus();
+            setupSearchListeners();
         });
 
-        // Auth Functions
-        function checkAuthStatus() {
-            const token = localStorage.getItem('authToken');
-            const username = localStorage.getItem('username');
+        function initMap() {
+            map = L.map('map').setView([30.3753, 69.3451], 6);
             
-            if (token && username) {
-                currentUser = { username, token };
-                document.getElementById('userInfo').classList.add('active');
-                document.getElementById('currentUsername').textContent = username;
-                document.getElementById('showAuthBtn').classList.add('hidden');
-            }
-        }
-
-        function toggleAuth() {
-            const authCard = document.getElementById('authCard');
-            authCard.classList.toggle('hidden');
-        }
-
-        function switchTab(tab) {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            if (tab === 'login') {
-                tabs[0].classList.add('active');
-                document.getElementById('loginForm').classList.remove('hidden');
-                document.getElementById('registerForm').classList.add('hidden');
-            } else {
-                tabs[1].classList.add('active');
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('registerForm').classList.remove('hidden');
-            }
-        }
-
-        async function register() {
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-
-            if (!username || !email || !password) {
-                showMessage('registerMessage', 'Please fill all fields', 'error');
-                return;
-            }
-
-            if (username.length < 3) {
-                showMessage('registerMessage', 'Username must be at least 3 characters', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showMessage('registerMessage', 'Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage('registerMessage', '✅ Account created! Please login.', 'success');
-                    setTimeout(() => switchTab('login'), 2000);
-                } else {
-                    showMessage('registerMessage', data.error || 'Registration failed', 'error');
-                }
-            } catch (error) {
-                showMessage('registerMessage', 'Server connection failed', 'error');
-            }
-        }
-
-        async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            if (!username || !password) {
-                showMessage('loginMessage', 'Please enter username and password', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('username', username);
-                    
-                    currentUser = { username, token: data.token };
-                    document.getElementById('userInfo').classList.add('active');
-                    document.getElementById('currentUsername').textContent = username;
-                    document.getElementById('showAuthBtn').classList.add('hidden');
-                    document.getElementById('authCard').classList.add('hidden');
-                    
-                    showMessage('loginMessage', '✅ Login successful!', 'success');
-                } else {
-                    showMessage('loginMessage', data.error || 'Login failed', 'error');
-                }
-            } catch (error) {
-                showMessage('loginMessage', 'Server connection failed', 'error');
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('username');
-            currentUser = null;
-            
-            document.getElementById('userInfo').classList.remove('active');
-            document.getElementById('showAuthBtn').classList.remove('hidden');
-        }
-
-        function showMessage(elementId, message, type) {
-            const msgEl = document.getElementById(elementId);
-            msgEl.textContent = message;
-            msgEl.className = type === 'error' ? 'error-message' : 'success-message';
-            msgEl.classList.remove('hidden');
-            
-            setTimeout(() => msgEl.classList.add('hidden'), 5000);
-        }
-
-        
-        // API Functions
-        async function checkHealth() {
-            try {
-                const response = await fetch(`${API_BASE}/health`);
-                const data = await response.json();
-                
-                document.getElementById('systemStatus').innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                        <span class="status-badge">
-                            <span class="status-dot"></span>
-                            ${data.status}
-                        </span>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="stat-item">
-                            <div class="stat-value">${data.junctions}</div>
-                            <div class="stat-label">Junctions</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">${data.roads}</div>
-                            <div class="stat-label">Roads</div>
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                document.getElementById('systemStatus').innerHTML = `
-                    <div class="error-message">
-                        <strong>⚠️ Server Offline</strong>
-                        <p>Cannot connect to the API server. Make sure the C++ server is running.</p>
-                        <small>Expected at: ${API_BASE}</small>
-                    </div>
-                `;
-            }
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
         }
 
         async function loadJunctions() {
             try {
                 const response = await fetch(`${API_BASE}/junctions`);
                 const data = await response.json();
-                junctions = data.junctions;
                 
-                populateDropdowns();
-                displayJunctions();
+                junctions = data.junctions.map(j => ({
+                    ...j,
+                    displayName: j.name,
+                    searchText: [
+                        j.name.toLowerCase(),
+                        j.area.toLowerCase(),
+                        j.city.toLowerCase()
+                    ].join(' ')
+                }));
+                
+                console.log('✅ Loaded', junctions.length, 'junctions');
             } catch (error) {
-                console.error('Error loading junctions:', error);
+                console.error('❌ Error loading junctions:', error);
             }
         }
 
-        async function loadRoads() {
-            try {
-                const response = await fetch(`${API_BASE}/roads`);
-                const data = await response.json();
-                roads = data.roads;
-            } catch (error) {
-                console.error('Error loading roads:', error);
+        function setupSearchListeners() {
+            setupSearch('from');
+            setupSearch('to');
+        }
+
+        function setupSearch(type) {
+            const input = document.getElementById(`${type}Search`);
+            const suggestions = document.getElementById(`${type}Suggestions`);
+            const clearBtn = document.getElementById(`clear${type.charAt(0).toUpperCase() + type.slice(1)}`);
+
+            let debounceTimer;
+
+            input.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearBtn.classList.toggle('visible', query.length > 0);
+                
+                clearTimeout(debounceTimer);
+                
+                if (query.length < 2) {
+                    suggestions.classList.remove('visible');
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    showSuggestions(type, query);
+                }, 300);
+            });
+
+            clearBtn.addEventListener('click', () => {
+                input.value = '';
+                clearBtn.classList.remove('visible');
+                suggestions.classList.remove('visible');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.classList.remove('visible');
+                }
+            });
+        }
+
+        async function showSuggestions(type, query) {
+            const suggestions = document.getElementById(`${type}Suggestions`);
+            const lowerQuery = query.toLowerCase();
+
+            suggestions.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">🔍 Searching...</div>';
+            suggestions.classList.add('visible');
+
+            const localMatches = junctions.filter(j => 
+                j.searchText.includes(lowerQuery)
+            ).slice(0, 5);
+
+            let smartResults = [];
+            if (localMatches.length === 0) {
+                console.log('🌐 No local results, trying smart search API...');
+                try {
+                    const response = await fetch(`${API_BASE}/smart-search?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.results && data.results.length > 0) {
+                        console.log('✅ Smart search found:', data.results.length, 'results');
+                        
+                        data.results.forEach(result => {
+                            if (!junctions.some(j => j.id === result.id)) {
+                                const newJunction = {
+                                    id: result.id,
+                                    name: result.name || result.displayName,
+                                    displayName: result.displayName || result.name,
+                                    city: result.city,
+                                    area: result.area,
+                                    latitude: result.latitude,
+                                    longitude: result.longitude,
+                                    hasTrafficSignal: result.hasTrafficSignal || false,
+                                    source: 'nominatim',
+                                    searchText: [
+                                        (result.name || '').toLowerCase(),
+                                        (result.area || '').toLowerCase(),
+                                        (result.city || '').toLowerCase()
+                                    ].join(' ')
+                                };
+                                junctions.push(newJunction);
+                                smartResults.push(newJunction);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('❌ Smart search error:', error);
+                }
             }
-        }
 
-        function populateDropdowns() {
-            const fromSelect = document.getElementById('fromJunction');
-            const toSelect = document.getElementById('toJunction');
-            
-            const options = junctions.map(j => 
-                `<option value="${j.id}">${j.name} (${j.area})</option>`
-            ).join('');
-            
-            fromSelect.innerHTML = '<option value="">Select starting point...</option>' + options;
-            toSelect.innerHTML = '<option value="">Select destination...</option>' + options;
-        }
+            const allMatches = [...localMatches, ...smartResults];
 
-        function displayJunctions() {
-            const list = document.getElementById('junctionList');
-            
-            list.innerHTML = junctions.map(j => `
-                <div class="junction-item">
-                    <div>
-                        <div class="junction-name">${j.name}</div>
-                        <div class="junction-area">${j.area}, ${j.city}</div>
+            if (allMatches.length === 0) {
+                suggestions.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+                        ❌ No results found for "${query}"
+                        <div style="margin-top: 10px; font-size: 0.85rem;">
+                            Try: "Liberty Chowk", "Mall Road", or city names
+                        </div>
                     </div>
-                    <span class="junction-id">ID: ${j.id}</span>
-                </div>
-            `).join('');
+                `;
+                suggestions.classList.add('visible');
+                return;
+            }
+
+            suggestions.innerHTML = allMatches.map(j => {
+                const isOSM = j.source === 'nominatim' || j.id >= 10000;
+                return `
+                    <div class="suggestion-item" onclick="selectJunction('${type}', ${j.id})">
+                        <div style="font-weight: 500;">${j.displayName}${isOSM ? ' 🌐' : ''}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">
+                            📌 ${j.area}, ${j.city}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (smartResults.length > 0) {
+                suggestions.innerHTML += `
+                    <div style="padding: 10px; background: var(--glass); border-top: 1px solid var(--glass-border); font-size: 0.8rem; color: var(--secondary); text-align: center;">
+                        ✅ Found ${smartResults.length} new location(s) from OpenStreetMap
+                    </div>
+                `;
+            }
+
+            suggestions.classList.add('visible');
         }
 
-        async function findRoute() {
-            const from = document.getElementById('fromJunction').value;
-            const to = document.getElementById('toJunction').value;
-            const optimize = document.getElementById('optimizeBy').value;
-            
-            if (!from || !to) {
-                showError('Please select both starting point and destination.');
-                return;
-            }
-            
-            if (from === to) {
-                showError('Starting point and destination cannot be the same.');
-                return;
+        function selectJunction(type, junctionId) {
+            const junction = junctions.find(j => j.id === junctionId);
+            if (!junction) return;
+
+            if (type === 'from') {
+                selectedFrom = junction;
+                if (markerFrom) map.removeLayer(markerFrom);
+                markerFrom = L.marker([junction.latitude, junction.longitude], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="width: 40px; height: 40px; background: #10b981; border: 3px solid white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">🚗</div>',
+                        iconSize: [40, 40]
+                    })
+                }).addTo(map);
+            } else {
+                selectedTo = junction;
+                if (markerTo) map.removeLayer(markerTo);
+                markerTo = L.marker([junction.latitude, junction.longitude], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="width: 40px; height: 40px; background: #ef4444; border: 3px solid white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏁</div>',
+                        iconSize: [40, 40]
+                    })
+                }).addTo(map);
             }
 
-            hideError();
-            showLoading(true);
+            const isOSM = junction.source === 'nominatim' || junction.id >= 10000;
+            document.getElementById(`${type}SelectedName`).textContent = junction.displayName + (isOSM ? ' 🌐' : '');
+            document.getElementById(`${type}SelectedMeta`).textContent = `${junction.area}, ${junction.city}`;
+            document.getElementById(`${type}Selected`).classList.add('visible');
+            document.getElementById(`${type}Search`).value = '';
+            document.getElementById(`${type}Suggestions`).classList.remove('visible');
+
+            updateFindButton();
             
+            if (selectedFrom && selectedTo) {
+                map.fitBounds([
+                    [selectedFrom.latitude, selectedFrom.longitude],
+                    [selectedTo.latitude, selectedTo.longitude]
+                ], { padding: [50, 50] });
+            } else {
+                map.setView([junction.latitude, junction.longitude], 13);
+            }
+        }
+
+        function clearSelection(type) {
+            if (type === 'from') {
+                selectedFrom = null;
+                if (markerFrom) {
+                    map.removeLayer(markerFrom);
+                    markerFrom = null;
+                }
+            } else {
+                selectedTo = null;
+                if (markerTo) {
+                    map.removeLayer(markerTo);
+                    markerTo = null;
+                }
+            }
+            document.getElementById(`${type}Selected`).classList.remove('visible');
+            updateFindButton();
+            clearAllRoutes();
+        }
+
+        function updateFindButton() {
+            document.getElementById('findRouteBtn').disabled = !selectedFrom || !selectedTo;
+        }
+
+        // ============ 🚨 CRITICAL FIX: ROUTE FINDING & DISPLAY ============
+        
+        async function findRoutes() {
+            if (!selectedFrom || !selectedTo) return;
+
+            console.log('🔍 Finding routes from:', selectedFrom.name, 'to:', selectedTo.name);
+    
+            // ✅ STEP 1: CLEAR EVERYTHING FIRST
+            showLoading(true);
+            clearAllRoutes();
+    
+            // ✅ STEP 2: RECREATE START/END MARKERS (Fresh start)
+            if (markerFrom) map.removeLayer(markerFrom);
+            if (markerTo) map.removeLayer(markerTo);
+    
+            markerFrom = L.marker([selectedFrom.latitude, selectedFrom.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="width: 40px; height: 40px; background: #10b981; border: 3px solid white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">🚗</div>',
+                    iconSize: [40, 40]
+                }),
+                zIndexOffset: 1000
+            }).addTo(map);
+
+            markerTo = L.marker([selectedTo.latitude, selectedTo.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="width: 40px; height: 40px; background: #ef4444; border: 3px solid white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏁</div>',
+                    iconSize: [40, 40]
+                }),
+                zIndexOffset: 1000
+            }).addTo(map);
+
             try {
-                const response = await fetch(`${API_BASE}/route?from=${from}&to=${to}&optimize=${optimize}`);
-                const data = await response.json();
-                
+                // ✅ STEP 3: FETCH BOTH ROUTES
+                const [timeRoute, distRoute] = await Promise.all([
+                    fetch(`${API_BASE}/route?from=${selectedFrom.id}&to=${selectedTo.id}&optimize=time`).then(r => r.json()),
+                    fetch(`${API_BASE}/route?from=${selectedFrom.id}&to=${selectedTo.id}&optimize=distance`).then(r => r.json())
+                ]);
+
                 showLoading(false);
+                console.log('📊 API Response - Time route:', timeRoute.found, 'Distance route:', distRoute.found);
+
+                if (timeRoute.found && distRoute.found) {
+                    // Check if routes are identical
+                    const timePathStr = JSON.stringify(timeRoute.junctions.map(j => j.id));
+                    const distPathStr = JSON.stringify(distRoute.junctions.map(j => j.id));
+            
+                    console.log('🔄 Comparing routes...');
+            
+                    if (timePathStr === distPathStr) {
+                        // Same path, show as optimal route
+                        console.log('✅ Same route for both time and distance - showing as optimal');
+                        currentRoutes = [
+                            { 
+                                ...timeRoute, 
+                                type: 'optimal', 
+                                color: '#10b981', 
+                                routeIndex: 0 
+                            }
+                        ];
+                    } else {
+                        // Different paths, show both
+                        console.log('✅ 2 Different routes found:');
+                        console.log('   🟢 Route 1 (Fastest):', timeRoute.totalTime.toFixed(1), 'min,', 
+                                    timeRoute.junctions.length, 'junctions, color: #10b981');
+                        console.log('   🔵 Route 2 (Shortest):', distRoute.totalDistance.toFixed(1), 'km,', 
+                                    distRoute.junctions.length, 'junctions, color: #6366f1');
                 
-                if (data.found) {
-                    displayRoute(data);
+                        currentRoutes = [
+                            { 
+                                ...timeRoute, 
+                                type: 'fastest', 
+                                color: '#10b981', 
+                                routeIndex: 0 
+                            },
+                            { 
+                                ...distRoute, 
+                                type: 'shortest', 
+                                color: '#6366f1', 
+                                routeIndex: 1 
+                            }
+                        ];
+                    }
+            
+                    displayRoutes();
                 } else {
-                    showError('No route found between the selected junctions.');
+                    // Try to show whichever route was found
+                    if (timeRoute.found) {
+                        console.log('⚠️ Only time route found');
+                        currentRoutes = [{ 
+                            ...timeRoute, 
+                            type: 'fastest', 
+                            color: '#10b981', 
+                            routeIndex: 0 
+                        }];
+                        displayRoutes();
+                    } else if (distRoute.found) {
+                        console.log('⚠️ Only distance route found');
+                        currentRoutes = [{ 
+                            ...distRoute, 
+                            type: 'shortest', 
+                            color: '#6366f1', 
+                            routeIndex: 0 
+                        }];
+                        displayRoutes();
+                    } else {
+                        console.log('❌ No route found');
+                        alert('No route found between these locations. They might not be connected.');
+                    }
                 }
             } catch (error) {
                 showLoading(false);
-                showError('Error connecting to server. Make sure the API is running.');
+                console.error('❌ Error finding routes:', error);
+                alert('Error: Backend server not responding. Please check if the C++ server is running on port 8080.');
             }
         }
 
-        function displayRoute(result) {
-            const container = document.getElementById('routeResult');
+        // ============ 🚨 CRITICAL FIX: DISPLAY ALL ROUTES ============
+        
+        function displayRoutes() {
+            console.log('📊 Displaying', currentRoutes.length, 'routes');
             
-            // Format time
-            const hours = Math.floor(result.totalTime / 60);
-            const minutes = Math.round(result.totalTime % 60);
-            const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes} min`;
-            
-            container.innerHTML = `
-                <div class="route-result">
-                    <h3 style="margin-bottom: 16px; color: var(--secondary);">✅ Route Found!</h3>
+            const container = document.getElementById('routesContainer');
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+            currentRoutes.forEach((route, index) => {
+                console.log(`   Route ${index + 1}:`, route.junctions.length, 'junctions,', route.totalDistance.toFixed(1), 'km');
+                
+                const hours = Math.floor(route.totalTime / 60);
+                const minutes = Math.round(route.totalTime) % 60;
+                const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}min`;
+                
+                const badgeClass = route.type === 'optimal' ? 'badge-optimal' : 
+                                  route.type === 'fastest' ? 'badge-fastest' : 'badge-shortest';
+                const badgeText = route.type === 'optimal' ? '✨ Optimal Route' :
+                                 route.type === 'fastest' ? '⚡ Fastest' : '📏 Shortest';
+                
+                const stepsHtml = route.junctions.map((j, i) => {
+                    const isOSM = j.id >= 10000 || j.source === 'nominatim';
+                    const stepType = i === 0 ? '🚗 Start' : 
+                                   i === route.junctions.length - 1 ? '🏁 Destination' : `📍 Stop ${i}`;
                     
+                    let distanceHtml = '';
+                    if (i < route.junctions.length - 1) {
+                        const nextJ = route.junctions[i + 1];
+                        const dist = calculateDistance(j, nextJ);
+                        distanceHtml = `<div class="step-distance">→ Next: ${dist.toFixed(2)} km</div>`;
+                    }
+                    
+                    return `
+                        <div class="route-step">
+                            <div class="step-number">${i + 1}</div>
+                            <div class="step-info">
+                                <div class="step-name">
+                                    ${stepType}: ${j.displayName || j.name}${isOSM ? ' 🌐' : ''}
+                                </div>
+                                <div class="step-location">${j.area}, ${j.city}</div>
+                                ${distanceHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                const card = document.createElement('div');
+                card.className = 'route-card' + (index === 0 ? ' active' : '');
+                card.onclick = () => selectRoute(index);
+                
+                card.innerHTML = `
+                    <div class="route-header">
+                        <span class="route-badge ${badgeClass}">
+                            ${badgeText}
+                        </span>
+                        <span class="traffic-indicator traffic-normal">
+                            🚦 ${getTrafficDescription(route)}
+                        </span>
+                    </div>
                     <div class="route-stats">
                         <div class="stat-item">
-                            <div class="stat-value">${result.totalDistance.toFixed(1)}</div>
-                            <div class="stat-label">Kilometers</div>
+                            <div class="stat-value">${route.totalDistance.toFixed(1)}</div>
+                            <div class="stat-label">km</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">${timeStr}</div>
-                            <div class="stat-label">Est. Time</div>
+                            <div class="stat-label">Time</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">${result.junctions.length}</div>
-                            <div class="stat-label">Junctions</div>
+                            <div class="stat-value">${route.junctions.length}</div>
+                            <div class="stat-label">Stops</div>
                         </div>
                     </div>
-                    
-                    <h4 style="margin-bottom: 12px; color: var(--text-muted);">Route Path:</h4>
                     <div class="route-path">
-                        ${result.junctions.map((j, i) => `
-                            <span class="path-junction">${j.name}</span>
-                            ${i < result.junctions.length - 1 ? '<span class="path-arrow">→</span>' : ''}
-                        `).join('')}
+                        <div class="path-title">🗺️ Step-by-Step Navigation</div>
+                        <div class="path-steps">
+                            ${stepsHtml}
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+                
+                container.appendChild(card);
+                
+                // ✅ Draw ALL routes on map (not just active one)
+                drawRoute(route, index === 0);
+            });
             
-            container.classList.remove('hidden');
-            
-            // Update map placeholder
-            updateMapDisplay(result);
+            // ✅ Fit map to show ALL routes
+            fitMapToAllRoutes();
         }
 
-        function updateMapDisplay(result) {
-            const mapContainer = document.getElementById('mapContainer');
+        // ============ 🚨 CRITICAL FIX: DRAW ROUTE WITH SMOOTH CURVES ============
+        
+        // ============ 🚨 FIXED: Don't duplicate start/end markers ============
+
+        function drawRoute(route, isActive) {
+            if (!route.junctions || route.junctions.length < 2) {
+                console.error('❌ Not enough junctions in route');
+                return;
+            }
+
+            console.log(`🎨 Drawing ${route.type} route with ${route.junctions.length} junctions`);
+
+            // Initialize route layers storage
+            if (!allRouteLayers[route.routeIndex]) {
+                allRouteLayers[route.routeIndex] = {
+                    polylines: [],
+                    markers: [],
+                    labels: [],
+                    arrows: []
+                };
+            }
+
+            const routeLayers = allRouteLayers[route.routeIndex];
+    
+            // Get coordinates from junctions
+            const coordinates = route.junctions.map(j => [j.latitude, j.longitude]);
+    
+            // ✅ GOOGLE MAPS-STYLE CURVED PATH
+            const polyline = L.polyline(coordinates, {
+                color: route.color,
+                weight: isActive ? 6 : 4,
+                opacity: isActive ? 0.9 : 0.6,
+                smoothFactor: 1.0,           // ✅ Creates curved paths
+                lineCap: 'round',           // ✅ Rounded line ends
+                lineJoin: 'round',          // ✅ Smooth corners
+                className: 'road-path'      // ✅ For CSS styling
+            }).addTo(map);
+    
+            routeLayers.polylines.push(polyline);
+
+            // Add markers for junctions
+            route.junctions.forEach((junction, index) => {
+                let markerIcon, markerClass;
+        
+                if (index === 0) {
+                    // Start marker (already created in findRoutes)
+                    return;
+                } else if (index === route.junctions.length - 1) {
+                    // End marker (already created in findRoutes)
+                    return;
+                } else {
+                    // Intermediate junction marker
+                    markerIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background: ${route.color}; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.4);">${index}</div>`,
+                        iconSize: [30, 30]
+                    });
+                    markerClass = 'junction';
             
-            mapContainer.innerHTML = `
-                <div style="padding: 20px; width: 100%;">
-                    <h4 style="color: var(--secondary); margin-bottom: 16px; text-align: center;">
-                        📍 Route: ${result.junctions[0].name} → ${result.junctions[result.junctions.length - 1].name}
-                    </h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        ${result.junctions.map((j, i) => `
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface); border-radius: 8px;">
-                                <div style="width: 30px; height: 30px; background: ${i === 0 ? 'var(--success)' : i === result.junctions.length - 1 ? 'var(--danger)' : 'var(--primary)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
-                                    ${i + 1}
-                                </div>
-                                <div>
-                                    <div style="font-weight: 500;">${j.name}</div>
-                                    <div style="font-size: 0.85rem; color: var(--text-muted);">${j.area}, ${j.city}</div>
-                                </div>
-                                <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
-                                    ${j.latitude.toFixed(4)}, ${j.longitude.toFixed(4)}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
+                    const marker = L.marker([junction.latitude, junction.longitude], {
+                        icon: markerIcon,
+                        zIndexOffset: 500
+                    }).addTo(map);
+            
+                    // Add popup
+                    const isOSM = junction.id >= 10000 || junction.source === 'nominatim';
+                    marker.bindPopup(`
+                        <div style="padding: 10px; min-width: 250px;">
+                            <strong>📍 ${junction.displayName || junction.name}</strong><br>
+                            <small>Stop ${index} of ${route.junctions.length}</small><br>
+                            <small>${junction.area}, ${junction.city}</small>
+                            ${isOSM ? '<br><small>🌐 From OpenStreetMap</small>' : ''}
+                        </div>
+                    `);
+                        
+                    routeLayers.markers.push(marker);
+                }
+            });
+    
+            // Fit map to show ALL routes
+            if (isActive) {
+                fitMapToAllRoutes();
+            }
+    
+            console.log(`✅ ${route.type} route drawn successfully`);
+        }
+
+        function drawDirectionArrows(route, coordinates, routeLayers) {
+            for (let i = 0; i < coordinates.length - 1; i++) {
+                const start = coordinates[i];
+                const end = coordinates[i + 1];
+                const midLat = (start[0] + end[0]) / 2;
+                const midLng = (start[1] + end[1]) / 2;
+                
+                const angle = Math.atan2(end[1] - start[1], end[0] - start[0]) * 180 / Math.PI;
+                
+                const arrow = L.marker([midLat, midLng], {
+                    icon: L.divIcon({
+                        className: 'direction-arrow',
+                        html: `<div style="transform: rotate(${angle}deg); color: ${route.color}; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none;">➔</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                }).addTo(map);
+                
+                routeLayers.arrows.push(arrow);
+            }
+        }
+
+        function drawTrafficSegments(route, routeLayers) {
+            route.trafficSegments.forEach((segment, index) => {
+                if (index >= route.junctions.length - 1) return;
+                
+                const startCoords = [route.junctions[index].latitude, route.junctions[index].longitude];
+                const endCoords = [route.junctions[index + 1].latitude, route.junctions[index + 1].longitude];
+                
+                let color, weight;
+                switch(segment.trafficLevel) {
+                    case 'Low': color = '#10b981'; weight = 2; break;
+                    case 'Normal': color = '#f59e0b'; weight = 3; break;
+                    case 'Heavy': color = '#fb923c'; weight = 4; break;
+                    case 'Severe': color = '#ef4444'; weight = 5; break;
+                    default: color = '#94a3b8'; weight = 3;
+                }
+                
+                const trafficLine = L.polyline([startCoords, endCoords], {
+                    color: color,
+                    weight: weight,
+                    opacity: 0.7,
+                    dashArray: '5, 5',
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }).addTo(map);
+                
+                routeLayers.polylines.push(trafficLine);
+            });
+        }
+
+        // ============ 🚨 CRITICAL FIX: SELECT ROUTE (SWITCH ACTIVE) ============
+        
+        function selectRoute(index) {
+            console.log('🎯 Selecting route', index);
+            
+            // Update card styling
+            document.querySelectorAll('.route-card').forEach((card, i) => {
+                card.classList.toggle('active', i === index);
+            });
+            
+            // Update map visualization for ALL routes
+            currentRoutes.forEach((route, i) => {
+                const routeLayers = allRouteLayers[route.routeIndex];
+                if (routeLayers) {
+                    const isActive = (i === index);
+                    
+                    // Update polyline visibility
+                    routeLayers.polylines.forEach(polyline => {
+                        polyline.setStyle({
+                            weight: isActive ? 6 : 4,
+                            opacity: isActive ? 0.9 : 0.6
+                        });
+                    });
+                    
+                    // Show/hide labels and arrows based on active state
+                    routeLayers.labels.forEach(label => {
+                        if (isActive) {
+                            if (!map.hasLayer(label)) map.addLayer(label);
+                        } else {
+                            if (map.hasLayer(label)) map.removeLayer(label);
+                        }
+                    });
+                    
+                    routeLayers.arrows.forEach(arrow => {
+                        if (isActive) {
+                            if (!map.hasLayer(arrow)) map.addLayer(arrow);
+                        } else {
+                            if (map.hasLayer(arrow)) map.removeLayer(arrow);
+                        }
+                    });
+                }
+            });
+            
+            // Fit map to active route
+            const activeRoute = currentRoutes[index];
+            if (activeRoute.junctions && activeRoute.junctions.length > 0) {
+                const bounds = L.latLngBounds(
+                    activeRoute.junctions.map(j => [j.latitude, j.longitude])
+                );
+                map.fitBounds(bounds, { padding: [80, 80] });
+            }
+        }
+
+        // ============ 🚨 CRITICAL FIX: CLEAR LAYERS ============
+        
+        function clearRouteLayers(routeIndex) {
+            console.log('🧹 Clearing layers for route', routeIndex);
+            
+            const routeLayers = allRouteLayers[routeIndex];
+            if (routeLayers) {
+                routeLayers.polylines.forEach(layer => {
+                    if (map.hasLayer(layer)) map.removeLayer(layer);
+                });
+                routeLayers.markers.forEach(layer => {
+                    if (map.hasLayer(layer)) map.removeLayer(layer);
+                });
+                routeLayers.labels.forEach(layer => {
+                    if (map.hasLayer(layer)) map.removeLayer(layer);
+                });
+                routeLayers.arrows.forEach(layer => {
+                    if (map.hasLayer(layer)) map.removeLayer(layer);
+                });
+                
+                allRouteLayers[routeIndex] = {
+                    polylines: [],
+                    markers: [],
+                    labels: [],
+                    arrows: []
+                };
+            }
+        }
+
+        function clearAllRoutes() {
+            console.log('🧹 CLEARING ALL PREVIOUS ROUTES...');
+    
+            // 1. Clear all map layers
+            Object.keys(allRouteLayers).forEach(routeIndex => {
+                const routeLayers = allRouteLayers[routeIndex];
+                if (routeLayers) {
+                    // Clear polylines
+                    if (routeLayers.polylines) {
+                        routeLayers.polylines.forEach(polyline => {
+                            if (polyline && map.hasLayer(polyline)) {
+                                map.removeLayer(polyline);
+                            }
+                        });
+                    }
+            
+                    // Clear markers (except start/end)
+                    if (routeLayers.markers) {
+                        routeLayers.markers.forEach(marker => {
+                            if (marker && map.hasLayer(marker)) {
+                                map.removeLayer(marker);
+                            }
+                        });
+                    }
+            
+                    // Clear labels
+                    if (routeLayers.labels) {
+                        routeLayers.labels.forEach(label => {
+                            if (label && map.hasLayer(label)) {
+                                map.removeLayer(label);
+                            }
+                        });
+                    }
+            
+                    // Clear arrows
+                    if (routeLayers.arrows) {
+                        routeLayers.arrows.forEach(arrow => {
+                            if (arrow && map.hasLayer(arrow)) {
+                                map.removeLayer(arrow);
+                            }
+                        });
+                    }
+                }
+            });
+    
+            // 2. Reset storage objects
+            allRouteLayers = {};
+            currentRoutes = [];
+    
+            // 3. Clear sidebar
+            const routesContainer = document.getElementById('routesContainer');
+            if (routesContainer) {
+                routesContainer.innerHTML = '';
+                routesContainer.classList.add('hidden');
+            }
+    
+            console.log('✅ All previous routes cleared successfully');
+        }
+
+        function fitMapToAllRoutes() {
+            const allBounds = [];
+            
+            currentRoutes.forEach(route => {
+                if (route.junctions && route.junctions.length > 0) {
+                    const bounds = L.latLngBounds(
+                        route.junctions.map(j => [j.latitude, j.longitude])
+                    );
+                    allBounds.push(bounds);
+                }
+            });
+            
+            if (allBounds.length > 0) {
+                const unionBounds = allBounds.reduce((acc, bounds) => {
+                    return acc.extend(bounds);
+                }, allBounds[0]);
+                
+                map.fitBounds(unionBounds, { padding: [100, 100] });
+            }
+        }
+
+        // ============ HELPER FUNCTIONS ============
+
+        function calculateDistance(j1, j2) {
+            const R = 6371;
+            const lat1 = j1.latitude * Math.PI / 180;
+            const lat2 = j2.latitude * Math.PI / 180;
+            const dLat = (j2.latitude - j1.latitude) * Math.PI / 180;
+            const dLon = (j2.longitude - j1.longitude) * Math.PI / 180;
+            
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1) * Math.cos(lat2) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            
+            return R * c;
+        }
+
+        function getTrafficDescription(route) {
+            if (!route.trafficSegments || route.trafficSegments.length === 0) return 'Moderate';
+            
+            const levels = route.trafficSegments.map(s => s.trafficLevel);
+            const severeCount = levels.filter(l => l === 'Severe').length;
+            const heavyCount = levels.filter(l => l === 'Heavy').length;
+            
+            if (severeCount > 0) return 'Heavy Traffic';
+            if (heavyCount > 0) return 'Moderate Traffic';
+            return 'Light Traffic';
         }
 
         function showLoading(show) {
             document.getElementById('loading').classList.toggle('active', show);
-            document.getElementById('routeResult').classList.add('hidden');
         }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = '⚠️ ' + message;
-            errorDiv.classList.remove('hidden');
-        }
-
-        function hideError() {
-            document.getElementById('errorMessage').classList.add('hidden');
-        }
-
-        // Auto-refresh status every 30 seconds
-        setInterval(checkHealth, 30000);
     </script>
 </body>
 </html>

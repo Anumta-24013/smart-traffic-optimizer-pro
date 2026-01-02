@@ -344,6 +344,20 @@ public:
         adjacencyList.clear();
         numVertices = 0;
     }
+
+    // In Graph.h, add this public method to the Graph class:
+
+    // Edge* getEdge(int source, int destination) {
+    //     auto it = adjacencyList.find(source);
+    //     if (it == adjacencyList.end()) return nullptr;
+
+    //     for (auto& edge : it->second) {
+    //         if (edge.destination == destination) {
+    //             return &edge;
+    //         }
+    //     }
+    //     return nullptr;
+    // }
 };
 
 #endif // GRAPH_H

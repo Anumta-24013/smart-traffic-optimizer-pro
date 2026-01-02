@@ -116,6 +116,113 @@ public:
         traverse([&count](const K&, const V&) { ++count; });
         return count;
     }
+
+    // Add these methods to BTree class (public section):
+
+    // ============ METRICS ============
+    struct BTreeMetrics {
+        int height;
+        int nodeCount;
+        int elementCount;
+        double avgKeysPerNode;
+        size_t memoryBytes;
+        int searchOps;
+    };
+
+    BTreeMetrics getMetrics() const {
+        BTreeMetrics m;
+        m.elementCount = size();
+        m.height = getHeight();
+        m.nodeCount = countNodes();
+        m.avgKeysPerNode = m.nodeCount > 0 ? 
+                        static_cast<double>(m.elementCount) / m.nodeCount : 0;
+        m.memoryBytes = m.elementCount * (sizeof(K) + sizeof(V) + 64); // Approx
+        m.searchOps = 0;
+        return m;
+    }
+
+    int getHeight() const {
+        return root ? getHeightHelper(root) : 0;
+    }
+
+    int countNodes() const {
+        return root ? countNodesHelper(root) : 0;
+    }
+
+    // ============ RANGE QUERY ============
+    std::vector<std::pair<K, V>> rangeQuery(const K& minKey, const K& maxKey) const {
+        std::vector<std::pair<K, V>> results;
+        if (!root) return results;
+        
+        rangeQueryHelper(root, minKey, maxKey, results);
+        return results;
+    }
+
+    // ============ PREFIX SEARCH ============
+    std::vector<std::pair<K, V>> prefixSearch(const K& prefix) const {
+        std::vector<std::pair<K, V>> results;
+        if (!root) return results;
+        
+        // For string keys, find all keys starting with prefix
+        traverse([&](const K& key, const V& value) {
+            if constexpr (std::is_same_v<K, std::string>) {
+                if (key.find(prefix) == 0) {  // Starts with prefix
+                    results.push_back({key, value});
+                }
+            }
+        });
+        
+        return results;
+    }
+
+    private:
+    // Helper for getHeight
+    int getHeightHelper(BTreeNode<K, V>* node) const {
+        if (!node || node->isLeaf) return 1;
+        
+        int maxChildHeight = 0;
+        for (auto child : node->children) {
+            maxChildHeight = std::max(maxChildHeight, getHeightHelper(child));
+        }
+        return 1 + maxChildHeight;
+    }
+
+    // Helper for countNodes
+    int countNodesHelper(BTreeNode<K, V>* node) const {
+        if (!node) return 0;
+        
+        int count = 1;
+        for (auto child : node->children) {
+            count += countNodesHelper(child);
+        }
+        return count;
+    }
+
+    // Helper for range query
+    void rangeQueryHelper(BTreeNode<K, V>* node, const K& minKey, const K& maxKey,
+                        std::vector<std::pair<K, V>>& results) const {
+        if (!node) return;
+        
+        size_t i = 0;
+        while (i < node->keys.size() && node->keys[i] < minKey) {
+            i++;
+        }
+        
+        while (i < node->keys.size() && node->keys[i] <= maxKey) {
+            if (!node->isLeaf && i < node->children.size()) {
+                rangeQueryHelper(node->children[i], minKey, maxKey, results);
+            }
+            
+            if (node->keys[i] >= minKey && node->keys[i] <= maxKey) {
+                results.push_back({node->keys[i], node->values[i]});
+            }
+            i++;
+        }
+        
+        if (!node->isLeaf && i < node->children.size()) {
+            rangeQueryHelper(node->children[i], minKey, maxKey, results);
+        }
+    }
 };
 
 // ======================== Implementation ========================
